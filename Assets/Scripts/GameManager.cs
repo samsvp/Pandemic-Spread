@@ -95,6 +95,9 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.T))
             pause = !pause;
+
+        if (Input.GetKeyDown(KeyCode.S))
+            isSocialDistancing = !isSocialDistancing;
     }
 
 
