@@ -46,8 +46,6 @@ public class Graph : MonoBehaviour
     {
         if (instance == null) instance = this;
         else Destroy(this);
-
-        gameObject.SetActive(false);
     }
 
 
@@ -58,6 +56,8 @@ public class Graph : MonoBehaviour
         infectedValues = new int[14];
 
         rectTransforms = rectTransforms.Select((_, index) => CreateBar(index)).ToArray();
+
+        gameObject.SetActive(false);
     }
 
 
