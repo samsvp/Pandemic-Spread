@@ -8,6 +8,8 @@ using UnityEngine.UI;
 
 public class Graph : MonoBehaviour
 {
+    public static Graph instance = null;
+
 
     // Graph GUI variables
     [SerializeField]
@@ -40,15 +42,22 @@ public class Graph : MonoBehaviour
     private int[] infectedValues;
 
 
+    private void Awake()
+    {
+        if (instance == null) instance = this;
+        else Destroy(this);
+
+        gameObject.SetActive(false);
+    }
+
+
     // Start is called before the first frame update
     void Start()
     {
-        int[] values = new int[] { 5, 98, 56, 45, 30, 22, 17, 15, 13, 17, 25, 37, 50, 15 };
-        int[] values2 = new int[] { 5, 20, 25, 60, 30, 75, 45, 2, 58, 20, 25, 37, 45, 45 };
+        deathValues = new int[14];
+        infectedValues = new int[14];
 
         rectTransforms = rectTransforms.Select((_, index) => CreateBar(index)).ToArray();
-        
-        UpdateTotals(values2, values);
     }
 
 
@@ -93,16 +102,31 @@ public class Graph : MonoBehaviour
     }
 
 
+    public void UpdateTotals(int mDeathValue, int mInfectedValue)
+    {
+        int[] ShiftArray(int[] arr, int value)
+        {
+            for (int i = 1; i < arr.Length; i++)
+            {
+                arr[i - 1] = arr[i];
+            }
+            arr[arr.Length - 1] = value;
+            return arr;
+        }
+        deathValues = ShiftArray(deathValues, mDeathValue);
+        infectedValues = ShiftArray(infectedValues, mInfectedValue);
+
+        UpdateTotals();
+    }
+
+
     /// <summary>
     /// Updates the death and infection toll
     /// </summary>
     /// <param name="deathValues"></param>
     /// <param name="infectedValues"></param>
-    public void UpdateTotals(int[] mDeathValues, int[] mInfectedValues)
+    private void UpdateTotals()
     {
-        deathValues = mDeathValues;
-        infectedValues = mInfectedValues;
-
         int maxDeaths = deathValues.Max();
         int maxInfections = infectedValues.Max();
 

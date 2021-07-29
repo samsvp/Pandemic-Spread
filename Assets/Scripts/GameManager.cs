@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -85,9 +86,18 @@ public class GameManager : MonoBehaviour
     private void UpdateTimer()
     {
         float currentTime = Time.time;
-        
+        int lastDay = currentDay;
+
         elapsedTime += (currentTime - this.currentTime);
         currentDay = (int)(elapsedTime / dayTime);
+
+        if (currentDay != lastDay) 
+        {
+            int dead = people.Where(p => p.IsDead).Count();
+            int infected = people.Where(p => p.IsSick).Count();
+
+            Graph.instance.UpdateTotals(dead, infected);
+        }
 
         this.currentTime = currentTime;
     }
