@@ -9,20 +9,18 @@ public class GameManager : MonoBehaviour
 
     public static GameManager instance;
 
+    // population variables
     [SerializeField]
     private int population = 500; // amount of people to instantiate
     [SerializeField]
     private int infectedPopulation = 10; // amount of people to start as infected
+    private Person[] people; // array containing all of the population
 
-    [SerializeField]
-    private float dayTime = 1; // time in seconds that a day should last in the simulation
-
+    // prefabs
     [SerializeField]
     private Person personPrefab; // base person to instantiate everyone from
     [SerializeField]
     private Disease diseasePrefab; // base disease to instantiate every disease from
-
-    private Person[] people; // array containing all of the population
 
     private int[,] grid; // grid of possible positions to spawn people in
 
@@ -30,7 +28,14 @@ public class GameManager : MonoBehaviour
     private int currentDay = 0;
     private float elapsedTime = 0;
     private float currentTime;
-    
+    [SerializeField]
+    private float dayTime = 1; // time in seconds that a day should last in the simulation
+
+    // modifiers
+    public bool isVaccinating = false;
+    public bool isSocialDistancing = false;
+    public bool pause = false;
+
 
     public float DayTime { get => dayTime; }
     public int[,] Grid { get => grid; }
@@ -71,8 +76,15 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        UpdateTimer();
         HandleInput();
+
+        if (pause)
+        {
+            currentTime = Time.time;
+            return;
+        }
+
+        UpdateTimer();
     }
 
 
@@ -80,6 +92,9 @@ public class GameManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.R))
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+
+        if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.T))
+            pause = !pause;
     }
 
 
@@ -96,7 +111,8 @@ public class GameManager : MonoBehaviour
             int dead = people.Where(p => p.IsDead).Count();
             int infected = people.Where(p => p.IsSick).Count();
 
-            Graph.instance.UpdateTotals(dead, infected);
+            if (infected > 0) Graph.instance.UpdateTotals(dead, infected);
+            else pause = true;
         }
 
         this.currentTime = currentTime;

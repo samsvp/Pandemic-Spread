@@ -14,6 +14,7 @@ public class Person : MonoBehaviour
     private float timeToChangeDirection = 1f;
     [SerializeField]
     private float speed;
+    private Vector3 initialPos;
 
     public Color sickColor;
     public Color recoveredColor;
@@ -24,6 +25,7 @@ public class Person : MonoBehaviour
 
     private SpriteRenderer sR;
     private Rigidbody2D rb2d;
+    private CircleCollider2D cc2d;
 
     private GameObject diseaseCircle;
     private float circleStartScale;
@@ -37,21 +39,32 @@ public class Person : MonoBehaviour
     {
         rb2d = GetComponent<Rigidbody2D>();
         sR = GetComponent<SpriteRenderer>();
+        cc2d = GetComponent<CircleCollider2D>();
 
         diseaseCircle = transform.GetChild(0).gameObject;
         circleStartScale = diseaseCircle.transform.localScale.x;
         diseaseCircle.SetActive(false);
 
-    sR.color = normalColor;
+        sR.color = normalColor;
 
         ChangeDirection();
+    }
+
+    private void Start()
+    {
+        initialPos = transform.position;
     }
 
     // Update is called once per frame
     void Update()
     {
         if (isDead) return;
-        
+        if (GameManager.instance.pause)
+        {
+            rb2d.velocity = Vector2.zero;
+            return;
+        }
+
         if (diseaseCircle.activeSelf)
         {
             PulseDiseaseCircle();
@@ -123,6 +136,13 @@ public class Person : MonoBehaviour
 
     private void HandleDirection()
     {
+        if (GameManager.instance.isSocialDistancing)
+        {
+            cc2d.enabled = false;
+            transform.position = Vector3.MoveTowards(transform.position, initialPos, Time.deltaTime * 2 * speed);
+            return;
+        }
+
         timeToChangeDirection -= Time.deltaTime;
 
         if (timeToChangeDirection <= 0)
@@ -133,6 +153,7 @@ public class Person : MonoBehaviour
         rb2d.velocity = transform.up * speed;
     }
 
+
     private void ChangeDirection()
     {
         float angle = Random.Range(0f, 360f);
@@ -142,6 +163,17 @@ public class Person : MonoBehaviour
         newUp.Normalize();
         transform.up = newUp;
         timeToChangeDirection = 1.5f;
+    }
+
+
+    private void GoToInitialPosition()
+    {
+        float angle = Vector2.Angle(transform.position, initialPos);
+        Quaternion quat = Quaternion.AngleAxis(angle, Vector3.forward);
+        Vector3 newUp = quat * Vector3.up;
+        newUp.z = 0;
+        newUp.Normalize();
+        transform.up = newUp;
     }
 
     #endregion random walk
